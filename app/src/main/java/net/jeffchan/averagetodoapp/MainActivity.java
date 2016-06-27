@@ -42,10 +42,12 @@ public class MainActivity extends AppCompatActivity {
     public void onAddItem(View view) {
         EditText editTextNewItem = (EditText) findViewById(R.id.editTextNewItem);
         String itemText = editTextNewItem.getText().toString();
-        mItemsAdapter.add(itemText); // Why go through the adapter, and not directly modify the ArrayList?
-        editTextNewItem.setText("");
 
-        writeItems();
+        if (!itemText.isEmpty()) {
+            mItemsAdapter.add(itemText); // Why go through the adapter, and not directly modify the ArrayList?
+            editTextNewItem.setText("");
+            writeItems();
+        }
     }
 
     @Override
