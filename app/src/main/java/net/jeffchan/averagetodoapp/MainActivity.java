@@ -1,6 +1,7 @@
 package net.jeffchan.averagetodoapp;
 
 import android.content.Intent;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -16,9 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-
-    private final int EDIT_ITEM_REQUEST_CODE = 0;
+public class MainActivity extends AppCompatActivity implements EditItemFragment.EditItemFragmentListener {
 
     private ArrayList<String> mItems;
     private ArrayAdapter<String> mItemsAdapter;
@@ -50,16 +49,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == EDIT_ITEM_REQUEST_CODE && resultCode == RESULT_OK) {
-            int itemPosition = data.getIntExtra("itemPosition", 0);
-            String newItemText = data.getStringExtra("newItemText");
-            saveEdit(itemPosition, newItemText);
-            Toast.makeText(this, "Edit saved", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void setupListViewListener() {
         mListViewItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -73,12 +62,17 @@ public class MainActivity extends AppCompatActivity {
         mListViewItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, EditItemActivity.class);
-                intent.putExtra("item", getItem(position));
-                intent.putExtra("itemPosition", position);
-                startActivityForResult(intent, EDIT_ITEM_REQUEST_CODE);
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                EditItemFragment editItemFragment = EditItemFragment.newInstance(getItem(position), position);
+                editItemFragment.show(fragmentManager, "fragment_edit_item");
             }
         });
+    }
+
+    @Override
+    public void onFinishEditDialog(String newItemText, int itemPosition) {
+        saveEdit(itemPosition, newItemText);
+        Toast.makeText(this, "Edit saved", Toast.LENGTH_SHORT).show();
     }
 
     private String getItem(int position) {
