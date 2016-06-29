@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="net.jeffchan.averagetodoapp.EditItemActivity">
+    tools:context="net.jeffchan.averagetodoapp.EditItemFragment">
 
     <EditText
         android:layout_width="wrap_content"
@@ -27,29 +27,8 @@
         android:layout_height="wrap_content"
         android:text="Save"
         android:id="@+id/buttonSave"
-        android:onClick="onClickSave"
         android:layout_below="@+id/editText"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:theme="@style/PrimaryButtonTheme" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Edit Item"
-        android:id="@+id/textViewLabel"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cancel"
-        android:id="@+id/buttonCancel"
-        android:onClick="onClickCancel"
-        android:layout_alignTop="@+id/buttonSave"
-        android:layout_toLeftOf="@+id/buttonSave"
-        android:layout_toStartOf="@+id/buttonSave" />
 </RelativeLayout>
