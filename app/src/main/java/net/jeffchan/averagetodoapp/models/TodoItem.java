@@ -10,11 +10,18 @@ import java.util.List;
 
 @Table(name = "TodoItems")
 public class TodoItem extends Model {
+    public enum Status {
+        INCOMPLETE, COMPLETED;
+    }
+
     @Column(name = "title")
     private String title;
 
     @Column(name = "timestamp")
     private Date timestamp;
+
+//    @Column(name = "status")
+    private int status;
 
     public TodoItem() {
         super();
@@ -24,6 +31,7 @@ public class TodoItem extends Model {
         super();
         this.title = title;
         this.timestamp = new Date();
+//        this.status = Status.INCOMPLETE.ordinal();
     }
 
     public String getTitle() {
@@ -34,8 +42,15 @@ public class TodoItem extends Model {
         return timestamp;
     }
 
+    public int getStatus() { return status; }
+
     public TodoItem setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public TodoItem setStatus(Status status) {
+        this.status = status.ordinal();
         return this;
     }
 
