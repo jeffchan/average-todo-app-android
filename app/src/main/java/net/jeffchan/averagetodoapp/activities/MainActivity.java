@@ -56,11 +56,8 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 TodoItem todoItem = getItem(position);
 
-                if (todoItem != null) {
-                    Log.d("debug", todoItem.getId().toString());
-                    todoItem.delete();
-                    mTodoItems.remove(position);
-                }
+                todoItem.delete();
+                mTodoItems.remove(position);
 
                 mTodoItemsAdapter.notifyDataSetChanged();
                 return true; // To denote that we consumed the long click event
