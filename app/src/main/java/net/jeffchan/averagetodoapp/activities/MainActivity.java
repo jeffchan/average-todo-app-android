@@ -1,28 +1,29 @@
 package net.jeffchan.averagetodoapp.activities;
 
+import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
+import net.jeffchan.averagetodoapp.R;
 import net.jeffchan.averagetodoapp.adapters.TodoItemAdapter;
 import net.jeffchan.averagetodoapp.fragments.EditItemFragment;
-import net.jeffchan.averagetodoapp.R;
 import net.jeffchan.averagetodoapp.models.TodoItem;
+import net.jeffchan.averagetodoapp.utils.ItemClickSupport;
 
 import java.util.List;
+
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
 public class MainActivity extends AppCompatActivity implements EditItemFragment.EditItemFragmentListener {
 
     private List<TodoItem> mTodoItems;
-    private ArrayAdapter<TodoItem> mTodoItemsAdapter;
-    private ListView mListViewItems;
+    private RecyclerView.Adapter mTodoItemsAdapter;
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,9 +32,11 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
 
         mTodoItems = TodoItem.getAll();
 
-        mListViewItems = (ListView) findViewById(R.id.listViewItems);
+        mRecyclerView = (RecyclerView) findViewById(R.id.listViewItems);
+        mRecyclerView.setItemAnimator(new SlideInUpAnimator());
         mTodoItemsAdapter = new TodoItemAdapter(this, mTodoItems);
-        mListViewItems.setAdapter(mTodoItemsAdapter);
+        mRecyclerView.setAdapter(mTodoItemsAdapter);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         setupListViewListener();
     }
@@ -45,31 +48,36 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         if (!itemText.isEmpty()) {
             TodoItem todoItem = new TodoItem(itemText);
             todoItem.save();
-            mTodoItemsAdapter.add(todoItem); // Why go through the adapter, and not directly modify the ArrayList?
+            mTodoItems.add(todoItem);
+            int newPosition = mTodoItems.size() - 1;
+            mTodoItemsAdapter.notifyItemInserted(newPosition);
+            mRecyclerView.scrollToPosition(mTodoItemsAdapter.getItemCount() - 1);
             editTextNewItem.setText("");
         }
     }
 
     private void setupListViewListener() {
-        mListViewItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+        ItemClickSupport.addTo(mRecyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                TodoItem todoItem = getItem(position);
+                EditItemFragment editItemFragment = EditItemFragment.newInstance(todoItem.getTitle(), position);
+                editItemFragment.show(fragmentManager, "fragment_edit_item");
+            }
+        });
+
+        ItemClickSupport.addTo(mRecyclerView).setOnItemLongClickListener(new ItemClickSupport.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClicked(RecyclerView recyclerView, int position, View v) {
                 TodoItem todoItem = getItem(position);
 
                 todoItem.delete();
                 mTodoItems.remove(position);
 
-                mTodoItemsAdapter.notifyDataSetChanged();
+                mTodoItemsAdapter.notifyItemRemoved(position);
                 return true; // To denote that we consumed the long click event
-            }
-        });
-        mListViewItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                TodoItem todoItem = getItem(position);
-                EditItemFragment editItemFragment = EditItemFragment.newInstance(todoItem.getTitle(), position);
-                editItemFragment.show(fragmentManager, "fragment_edit_item");
             }
         });
     }
@@ -87,6 +95,6 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
     private void saveEdit(int itemPosition, String newTitle) {
         TodoItem todoItem = getItem(itemPosition);
         todoItem.setTitle(newTitle);
-        mTodoItemsAdapter.notifyDataSetChanged();
+        mTodoItemsAdapter.notifyItemChanged(itemPosition);
     }
 }
