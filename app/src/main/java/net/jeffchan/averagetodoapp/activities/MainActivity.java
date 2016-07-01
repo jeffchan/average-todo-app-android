@@ -1,9 +1,9 @@
-package net.jeffchan.averagetodoapp;
+package net.jeffchan.averagetodoapp.activities;
 
-import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -11,16 +11,17 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.apache.commons.io.FileUtils;
+import net.jeffchan.averagetodoapp.adapters.TodoItemAdapter;
+import net.jeffchan.averagetodoapp.fragments.EditItemFragment;
+import net.jeffchan.averagetodoapp.R;
+import net.jeffchan.averagetodoapp.models.TodoItem;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements EditItemFragment.EditItemFragmentListener {
 
-    private ArrayList<String> mItems;
-    private ArrayAdapter<String> mItemsAdapter;
+    private List<TodoItem> mTodoItems;
+    private ArrayAdapter<TodoItem> mTodoItemsAdapter;
     private ListView mListViewItems;
 
     @Override
@@ -28,12 +29,11 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mTodoItems = TodoItem.getAll();
+
         mListViewItems = (ListView) findViewById(R.id.listViewItems);
-
-        readItems();
-
-        mItemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, mItems);
-        mListViewItems.setAdapter(mItemsAdapter);
+        mTodoItemsAdapter = new TodoItemAdapter(this, mTodoItems);
+        mListViewItems.setAdapter(mTodoItemsAdapter);
 
         setupListViewListener();
     }
@@ -43,9 +43,10 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         String itemText = editTextNewItem.getText().toString();
 
         if (!itemText.isEmpty()) {
-            mItemsAdapter.add(itemText); // Why go through the adapter, and not directly modify the ArrayList?
+            TodoItem todoItem = new TodoItem(itemText);
+            todoItem.save();
+            mTodoItemsAdapter.add(todoItem); // Why go through the adapter, and not directly modify the ArrayList?
             editTextNewItem.setText("");
-            writeItems();
         }
     }
 
@@ -53,9 +54,15 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         mListViewItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                mItems.remove(position);
-                mItemsAdapter.notifyDataSetChanged();
-                writeItems();
+                TodoItem todoItem = getItem(position);
+
+                if (todoItem != null) {
+                    Log.d("debug", todoItem.getId().toString());
+                    todoItem.delete();
+                    mTodoItems.remove(position);
+                }
+
+                mTodoItemsAdapter.notifyDataSetChanged();
                 return true; // To denote that we consumed the long click event
             }
         });
@@ -63,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
-                EditItemFragment editItemFragment = EditItemFragment.newInstance(getItem(position), position);
+                TodoItem todoItem = getItem(position);
+                EditItemFragment editItemFragment = EditItemFragment.newInstance(todoItem.getTitle(), position);
                 editItemFragment.show(fragmentManager, "fragment_edit_item");
             }
         });
@@ -75,36 +83,13 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         Toast.makeText(this, "Edit saved", Toast.LENGTH_SHORT).show();
     }
 
-    private String getItem(int position) {
-        return mItems.get(position);
+    private TodoItem getItem(int position) {
+        return mTodoItems.get(position);
     }
 
-    private void readItems() {
-        File todoFile = getFile();
-        try {
-            mItems = new ArrayList<String>(FileUtils.readLines(todoFile));
-        } catch (IOException e) {
-            mItems = new ArrayList<String>();
-        }
-    }
-
-    private void writeItems() {
-        File todoFile = getFile();
-        try {
-            FileUtils.writeLines(todoFile, mItems);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private File getFile() {
-        File filesDir = getFilesDir();
-        return new File(filesDir, "todo.txt");
-    }
-
-    private void saveEdit(int itemPosition, String newItemText) {
-        mItems.set(itemPosition, newItemText);
-        mItemsAdapter.notifyDataSetChanged();
-        writeItems();
+    private void saveEdit(int itemPosition, String newTitle) {
+        TodoItem todoItem = getItem(itemPosition);
+        todoItem.setTitle(newTitle);
+        mTodoItemsAdapter.notifyDataSetChanged();
     }
 }
