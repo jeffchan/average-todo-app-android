@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -80,6 +81,25 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
                 return true; // To denote that we consumed the long click event
             }
         });
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                TodoItem todoItem = getItem(position);
+
+                todoItem.delete();
+                mTodoItems.remove(position);
+
+                mTodoItemsAdapter.notifyItemRemoved(position);
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
 
     @Override
