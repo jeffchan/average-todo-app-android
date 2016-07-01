@@ -3,12 +3,23 @@
           package="net.jeffchan.averagetodoapp">
 
     <application
+        android:name="com.activeandroid.app.Application"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <meta-data
+            android:name="TODO_LIST_APP"
+            android:value="RestClient.db" />
+        <meta-data
+            android:name="AA_DB_VERSION"
+            android:value="2" />
+        <meta-data
+            android:name="AA_MODELS"
+            android:value="net.jeffchan.averagetodoapp.models.TodoItem" />
+
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
